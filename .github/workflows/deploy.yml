@@ -1,0 +1,81 @@
+name: CI/CD
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  # -------------------------------------------------------------------
+  # Test — runs on every push and pull request
+  # -------------------------------------------------------------------
+  test:
+    name: Lint and Test
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: "pip"
+
+      - name: Install dependencies
+        run: pip install -r requirements-dev.txt
+
+      - name: Lint with ruff
+        run: ruff check app.py cleanup.py tests/
+
+      - name: Run tests
+        run: pytest tests/ -v --tb=short
+
+  # -------------------------------------------------------------------
+  # Deploy — only runs when tests pass on a push to main
+  # (not on pull requests)
+  # -------------------------------------------------------------------
+  deploy:
+    name: Deploy to Oracle Cloud
+    needs: test
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Deploy via SSH
+        env:
+          ORACLE_SSH_KEY: ${{ secrets.ORACLE_SSH_KEY }}
+          ORACLE_HOST: ${{ secrets.ORACLE_HOST }}
+          ORACLE_USER: ${{ secrets.ORACLE_USER }}
+        run: |
+          # Write the private key to a temp file
+          mkdir -p ~/.ssh
+          echo "$ORACLE_SSH_KEY" > ~/.ssh/deploy_key
+          chmod 600 ~/.ssh/deploy_key
+
+          # Trust the server's host key
+          ssh-keyscan -H "$ORACLE_HOST" >> ~/.ssh/known_hosts
+
+          # Copy app files — config.env lives only on the server and is never
+          # committed to the repo, so we deliberately exclude it here.
+          scp -i ~/.ssh/deploy_key \
+            app.py cleanup.py \
+            "$ORACLE_USER@$ORACLE_HOST:~"
+
+          # Install files and restart the service
+          ssh -i ~/.ssh/deploy_key "$ORACLE_USER@$ORACLE_HOST" '
+            sudo cp ~/app.py   /opt/rotator/app.py
+            sudo cp ~/cleanup.py /opt/rotator/cleanup.py
+            sudo systemctl restart rotator
+
+            # Give gunicorn a moment to start, then confirm it is running
+            sleep 3
+            sudo systemctl is-active --quiet rotator \
+              && echo "Deploy successful — rotator is running" \
+              || { echo "Deploy failed — rotator is not running"; exit 1; }
+          '

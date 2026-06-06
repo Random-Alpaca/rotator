@@ -7,10 +7,9 @@ Tests are organized into three groups:
   - Flask routes (use test client, mock run_rotation)
 """
 
-import threading
 import time
 import urllib.error
-from unittest.mock import MagicMock, call, patch
+from unittest.mock import MagicMock, patch
 
 import pytest
 

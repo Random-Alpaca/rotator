@@ -28,7 +28,7 @@ jobs:
         run: pip install -r requirements-dev.txt
 
       - name: Lint with ruff
-        run: ruff check app.py cleanup.py tests/
+        run: ruff check app.py cleanup.py tests/ --fix
 
       - name: Run tests
         run: pytest tests/ -v --tb=short

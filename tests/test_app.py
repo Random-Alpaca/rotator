@@ -156,13 +156,26 @@ class TestIndexRoute:
         resp = client.get("/")
         assert b"REFRESH" in resp.data
 
+    def test_contains_rendered_variables(self, client):
+        resp = client.get("/")
+        assert b"toronto.jxue.ca" in resp.data
+        assert b"900s" in resp.data
+
+    def test_remaining_cooldown_rendered(self, client):
+        now = time.time()
+        with patch("time.time", return_value=now):
+            app._last_rotation = now - 300
+            resp = client.get("/")
+        assert b"parseInt('600')" in resp.data
+
 
 class TestRefreshRoute:
     def test_returns_ok_on_successful_rotation(self, client):
+        import json
         with patch("app.run_rotation", return_value="1.2.3.4"):
             resp = client.post("/refresh")
         assert resp.status_code == 200
-        assert resp.get_json() == {"ok": True}
+        assert json.loads(resp.data)["ok"] is True
 
     def test_returns_500_when_rotation_raises(self, client):
         with patch("app.run_rotation", side_effect=RuntimeError("DO API timeout")):

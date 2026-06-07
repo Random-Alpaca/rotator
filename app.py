@@ -434,73 +434,6 @@ HTML = """<!DOCTYPE html>
     box-shadow: none;
   }
 
-  /* ---- Confirmation Screen ---- */
-  #confirm-screen {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    width: 180px;
-    height: 180px;
-    border-radius: 50%;
-    position: absolute;
-    z-index: 10;
-    animation: popIn 0.3s cubic-bezier(0.34, 1.56, 0.64, 1) both;
-  }
-
-  @keyframes popIn {
-    from { opacity: 0; transform: scale(0.8); }
-    to { opacity: 1; transform: scale(1); }
-  }
-
-  .confirm-msg {
-    font-size: 0.75rem;
-    font-weight: 600;
-    letter-spacing: 0.18em;
-    color: rgba(255, 255, 255, 0.9);
-    margin-bottom: 16px;
-    text-transform: uppercase;
-    text-align: center;
-  }
-
-  .confirm-actions {
-    display: flex;
-    gap: 8px;
-    width: 100%;
-    justify-content: center;
-  }
-
-  .confirm-btn {
-    padding: 8px 16px;
-    border-radius: 20px;
-    border: 1px solid rgba(255, 255, 255, 0.12);
-    background: rgba(255, 255, 255, 0.02);
-    color: rgba(255, 255, 255, 0.7);
-    font-size: 0.65rem;
-    font-family: inherit;
-    font-weight: 700;
-    letter-spacing: 0.1em;
-    cursor: pointer;
-    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-    outline: none;
-    min-width: 70px;
-    text-align: center;
-  }
-
-  .yes-btn:hover {
-    background: rgba(74, 222, 128, 0.1);
-    border-color: rgba(74, 222, 128, 0.4);
-    color: #4ade80;
-    box-shadow: 0 0 15px rgba(74, 222, 128, 0.15);
-  }
-
-  .no-btn:hover {
-    background: rgba(248, 113, 113, 0.1);
-    border-color: rgba(248, 113, 113, 0.4);
-    color: #f87171;
-    box-shadow: 0 0 15px rgba(248, 113, 113, 0.15);
-  }
-
   /* ---- Spinner ---- */
   #spinner {
     width: 60px;
@@ -602,16 +535,7 @@ HTML = """<!DOCTYPE html>
 
   <div class="stage">
     <!-- Main button -->
-    <button id="btn" onclick="askConfirmation()">REFRESH</button>
-
-    <!-- Confirmation Overlay -->
-    <div id="confirm-screen" class="hidden">
-      <div class="confirm-msg">ROTATE IP?</div>
-      <div class="confirm-actions">
-        <button id="btn-confirm" class="confirm-btn yes-btn" onclick="confirmRefresh()">YES</button>
-        <button id="btn-cancel" class="confirm-btn no-btn" onclick="cancelRefresh()">NO</button>
-      </div>
-    </div>
+    <button id="btn" onclick="doRefresh()">REFRESH</button>
 
     <!-- Spinner -->
     <div id="spinner" class="hidden"></div>
@@ -632,7 +556,6 @@ HTML = """<!DOCTYPE html>
 
 <script>
   const btn           = document.getElementById('btn');
-  const confirmScreen = document.getElementById('confirm-screen');
   const spinner       = document.getElementById('spinner');
   const loadingText   = document.getElementById('loading-text');
   const okMark        = document.getElementById('ok-mark');
@@ -646,20 +569,12 @@ HTML = """<!DOCTYPE html>
   let cooldownInterval;
 
   function show(el, el2) {
-    [btn, confirmScreen, spinner, loadingText, okMark, errMark].forEach(e => e.classList.add('hidden'));
+    [btn, spinner, loadingText, okMark, errMark].forEach(e => e.classList.add('hidden'));
     if (el) el.classList.remove('hidden');
     if (el2) el2.classList.remove('hidden');
   }
 
-  function askConfirmation() {
-    show(confirmScreen);
-  }
-
-  function cancelRefresh() {
-    show(btn);
-  }
-
-  async function confirmRefresh() {
+  async function doRefresh() {
     show(spinner, loadingText);
     loadingText.textContent = 'STARTING ROTATION...';
     updateStatus('STARTING...', 'yellow');
@@ -690,7 +605,7 @@ HTML = """<!DOCTYPE html>
         if (done) break;
 
         buffer += decoder.decode(value, { stream: true });
-        const lines = buffer.split('\n');
+        const lines = buffer.split(String.fromCharCode(10));
         buffer = lines.pop();
 
         for (const line of lines) {

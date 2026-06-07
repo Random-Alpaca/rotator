@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
 """
-rotator/app.py — Single-button IP rotator.
+rotator/app.py — Single-button rotator.
 
 GET  /         → the page
-POST /refresh  → rotate IP, returns {"ok": true} or {"ok": false}
+POST /refresh  → rotate, returns {"ok": true} or {"ok": false}
 """
 
 import json
@@ -280,7 +280,7 @@ HTML = """<!DOCTYPE html>
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
-<title>IP Rotator</title>
+<title>Manual Refresher</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
@@ -588,8 +588,8 @@ HTML = """<!DOCTYPE html>
 <div class="card">
   <div class="header">
     <div class="title-group">
-      <span class="title">IP Rotator</span>
-      <span class="subtitle">DigitalOcean Integration</span>
+      <span class="title">Manual Refresher</span>
+      <span class="subtitle">For when you have broken code.</span>
     </div>
     <div class="status-indicator">
       <div class="status-dot"></div>
@@ -621,11 +621,7 @@ HTML = """<!DOCTYPE html>
 
   <div class="footer">
     <div class="info-row">
-      <span class="info-label">DNS Target</span>
-      <span class="info-value">{{ fqdn }}</span>
-    </div>
-    <div class="info-row">
-      <span class="info-label">Cooldown</span>
+      <span class="info-label">Cost-Control Cooldown</span>
       <span class="info-value" id="cooldown-val">{{ cooldown }}s</span>
     </div>
   </div>

@@ -148,7 +148,7 @@ def run_rotation():
     old_ips = list_droplet_reserved_ips()
     unassigned: list[str] = []
     for ip in old_ips:
-        yield "unassigning", f"Fixing broken addresses..."
+        yield "unassigning", "Fixing broken addresses..."
         unassign_reserved_ip(ip)
         unassigned.append(ip)
 
@@ -160,7 +160,7 @@ def run_rotation():
         raise
 
     try:
-        yield "updating_dns", f"Updating Pointer..."
+        yield "updating_dns", "Updating Pointer..."
         record_id, existing_ttl = find_a_record(domain, record_name)
         if record_id:
             do_req("PATCH", f"/domains/{domain}/records/{record_id}",

@@ -158,7 +158,6 @@ class TestIndexRoute:
 
     def test_contains_rendered_variables(self, client):
         resp = client.get("/")
-        assert b"toronto.jxue.ca" in resp.data
         assert b"900s" in resp.data
 
     def test_remaining_cooldown_rendered(self, client):

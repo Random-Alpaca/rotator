@@ -191,7 +191,10 @@ def index():
     now = time.time()
     elapsed = now - _last_rotation
     remaining = max(0, int(COOLDOWN - elapsed))
-    return render_template_string(HTML, fqdn=DNS_FQDN, cooldown=COOLDOWN, remaining=remaining), 200, {"Content-Type": "text/html; charset=utf-8"}
+    return render_template_string(HTML, fqdn=DNS_FQDN, cooldown=COOLDOWN, remaining=remaining), 200, {
+        "Content-Type": "text/html; charset=utf-8",
+        "Cache-Control": "no-store",
+    }
 
 
 @app.route("/refresh", methods=["POST"])
